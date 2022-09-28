@@ -1,25 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useRef, useState } from 'react'
+import "./App.css";
+import Todo from './Todo';
 
-function App() {
+const App = () => {
+  const [todos, setTodos] = useState(JSON.parse(window.localStorage.getItem("todos")) || [])
+  const [count, setCount] = useState(0);
+
+  const nameRef = useRef();
+
+  const createTodo = (e) => {
+    e.preventDefault();
+    const newTodo = {
+      name: nameRef.current.value,
+      done: false
+    };
+    const newTodos = [...todos, newTodo].sort((a, b) => a.name < b.name); 
+    setTodos(newTodos);
+    localStorage.setItem("todos", JSON.stringify(newTodos));
+  }
+
+  const updateTodo = (todo) => {
+    const updatedTodo = { ...todo, done: !todo.done };
+    const newTodos = [...todos.filter(item => item.name !== todo.name), updatedTodo].sort((a, b) => a.name < b.name);
+    setTodos(newTodos)
+    localStorage.setItem("todos", JSON.stringify(newTodos));
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <>
+      <form onSubmit={ createTodo }>
+        <input type="text" ref={ nameRef } />
+        <br/>
+        <button type="submit">Create</button>
+      </form>
+      <div>
+        { todos.map(todo => (
+          <Todo todo={ todo } updateTodo={ () => updateTodo(todo) } key={ todo.name }/>
+        ))}
+      </div>
+      <button onClick={ () => setCount(count + 1) }>You have clicked { count } times</button>
+    </>
+  )
 }
 
-export default App;
+export default App
